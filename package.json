@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "preinstall": "cmd /c \"del /q package-lock.json yarn.lock 2>nul\"",
+    "preinstall": "node -e \"const fs=require('fs');['package-lock.json','yarn.lock'].forEach(f=>{try{fs.rmSync(f,{force:true})}catch{} })\"",
     "dev": "pnpm --parallel --filter @workspace/api-server --filter @workspace/crypto-app run dev",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",
