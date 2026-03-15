@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "For sleek page transitions and scroll-triggered animations"
+  "@hookform/resolvers": "Zod validation with react-hook-form"
+  "react-hook-form": "Form state management"
+  "zod": "Schema validation"
+  "date-fns": "For formatting transaction dates"
+  "clsx": "Utility for constructing className strings"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+
+images:
+  - path: "artifacts/crypto-app/public/images/crypto-bg.png"
+    description: "Abstract sleek dark space background with electric blue and neon cyan geometric glassmorphism and subtle glowing data lines, highly professional, dark mode, 8k resolution"
+    aspect_ratio: "16:9"
+
+notes:
+  - Utilizing generated api client hooks from @workspace/api-client-react
+  - Force dark mode style across the entire application

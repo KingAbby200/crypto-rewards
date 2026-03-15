@@ -1,0 +1,21 @@
+I want to ceate a web application in nextjs (no typescript) and mongodb. It should be made with vercel deployment in mind. It should have a page the user sees when they visit a customized link that says Congratulations (name). It should display the connected wallet of the user.
+The website's main feature will be the admin dashboard. The admin should be able to access the dashboard through a hidden login page. The admin should be able to edit and customize things, like create a user account (which creates a customized link) using the user's name and ethereum wallet address, the eligibile ethereum amount available for withdrawal, the ethereum wallet address the user needs to pay the withdrawal fee to. The withdrawal fee (in ETH) should be set by the admin. A withdrawal instruction page should exist where the CTA button that says initiate withdawal should cause a modal to popup displaying the copyable ethereum wallet to send the withdrawal fee to. Still on the modal, a button should exist for the user to click after payment to alert the admin for confirmation.
+The admin after confrming transactions should have the full ability to update and edit the commission payment history page of the specific user. The table on this page should include the required fields such as the amount paid, date, and any other field you feel should be present
+The site should have a modern, beautiful, and professional crypto feel. The site doesn't have to be a fully functional crypto application but should do everything I have asked for. The navigation should be intuitive. The pages link should be accessible icons at the bottom of the screen. It should also include subtle and professional animations.I want to ceate a web application in nextjs (no typescript) and mongodb. It should have a page the user sees when they visit a customized link that says Congratulations (name). It should display the connected wallet of the user.
+The website's main feature will be the admin dashboard. The admin should be able to access the dashboard through a hidden login page. The admin should be able to edit and customize things, like create a user account (which creates a customized link) using the user's name and ethereum wallet address, the eligibile ethereum amount available for withdrawal, the ethereum wallet address the user needs to pay the withdrawal fee to. The withdrawal fee (in ETH) should be set by the admin. A withdrawal instruction page should exist where the CTA button that says initiate withdawal should cause a modal to popup displaying the copyable ethereum wallet to send the withdrawal fee to. Still on the modal, a button should exist for the user to click after payment to alert the admin for confirmation.
+The admin after confrming transactions should have the full ability to update and edit the commission payment history page of the specific user. The table on this page should include the required fields such as the amount paid, date, and any other field you feel should be present
+The site should have a modern, beautiful, and professional crypto feel. The site doesn't have to be a fully functional crypto application but should do everything I have asked for. The navigation should be intuitive. The pages link should be accessible icons at the bottom of the screen. It should also include subtle and professional animations.
+
+The admin shouldhave the capability to edit and update the transactions. When the admin clicks on a user from the dashboard, he should be able to edit the payment history and eligible balance of the client which is visible to the client (user). To make it clear, the client should be able to visit their payment history page. For the deployment, I need you to add a .md file that describes all the steps I must take in other to publish the application without replit, from the database setup to environment vaiables to hosting, everything.
+
+
+
+
+
+
+
+
+
+
+
+

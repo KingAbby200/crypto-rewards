@@ -1,0 +1,647 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Crypto Rewards Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Admin authentication
+  - name: users
+    description: User management
+  - name: transactions
+    description: Transaction / payment history management
+  - name: withdrawalRequests
+    description: Withdrawal payment request management
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: adminLogin
+      tags: [auth]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: adminLogout
+      tags: [auth]
+      summary: Admin logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getAuthStatus
+      tags: [auth]
+      summary: Check if admin is authenticated
+      responses:
+        "200":
+          description: Auth status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatusResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+
+  /users/{slug}:
+    get:
+      operationId: getUserBySlug
+      tags: [users]
+      summary: Get user by their unique slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user details (admin only)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user (admin only)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /users/{slug}/transactions:
+    get:
+      operationId: getUserTransactions
+      tags: [transactions]
+      summary: Get payment history for a user
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Add a transaction to a user's history (admin only)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransactionRequest"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /users/{slug}/transactions/{txId}:
+    put:
+      operationId: updateTransaction
+      tags: [transactions]
+      summary: Update a transaction (admin only)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: txId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTransactionRequest"
+      responses:
+        "200":
+          description: Transaction updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Delete a transaction (admin only)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: txId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /users/{slug}/withdrawal-request:
+    get:
+      operationId: getWithdrawalRequest
+      tags: [withdrawalRequests]
+      summary: Get the current withdrawal request for a user
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Withdrawal request or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalRequestOrNull"
+        "404":
+          description: User not found
+    post:
+      operationId: submitWithdrawalRequest
+      tags: [withdrawalRequests]
+      summary: User submits a payment notification (I've Made Payment)
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitWithdrawalRequestBody"
+      responses:
+        "201":
+          description: Withdrawal request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalRequest"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+
+  /admin/withdrawal-requests:
+    get:
+      operationId: listWithdrawalRequests
+      tags: [withdrawalRequests]
+      summary: List all pending withdrawal requests (admin only)
+      responses:
+        "200":
+          description: List of withdrawal requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WithdrawalRequestWithUser"
+        "401":
+          description: Unauthorized
+
+  /admin/withdrawal-requests/{requestId}/verify:
+    put:
+      operationId: verifyWithdrawalRequest
+      tags: [withdrawalRequests]
+      summary: Admin verifies a withdrawal request
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalRequest"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /admin/withdrawal-requests/{requestId}/reject:
+    put:
+      operationId: rejectWithdrawalRequest
+      tags: [withdrawalRequests]
+      summary: Admin rejects a withdrawal request
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalRequest"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    LoginRequest:
+      type: object
+      properties:
+        password:
+          type: string
+      required: [password]
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        token:
+          type: string
+      required: [success, message]
+
+    AuthStatusResponse:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+      required: [authenticated]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        walletAddress:
+          type: string
+        eligibleBalance:
+          type: number
+        withdrawalFeeEth:
+          type: number
+        feeWalletAddress:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, name, slug, walletAddress, eligibleBalance, withdrawalFeeEth, feeWalletAddress, createdAt, updatedAt]
+
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        walletAddress:
+          type: string
+        eligibleBalance:
+          type: number
+        withdrawalFeeEth:
+          type: number
+        feeWalletAddress:
+          type: string
+      required: [name, walletAddress, eligibleBalance, withdrawalFeeEth, feeWalletAddress]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        walletAddress:
+          type: string
+        eligibleBalance:
+          type: number
+        withdrawalFeeEth:
+          type: number
+        feeWalletAddress:
+          type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [commission, bonus, withdrawal, fee]
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        txHash:
+          type: string
+        note:
+          type: string
+        date:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, amount, type, status, date, createdAt, updatedAt]
+
+    CreateTransactionRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [commission, bonus, withdrawal, fee]
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        txHash:
+          type: string
+        note:
+          type: string
+        date:
+          type: string
+      required: [amount, type, status, date]
+
+    UpdateTransactionRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [commission, bonus, withdrawal, fee]
+        status:
+          type: string
+          enum: [pending, completed, failed]
+        txHash:
+          type: string
+        note:
+          type: string
+        date:
+          type: string
+
+    WithdrawalRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userSlug:
+          type: string
+        requestedAmount:
+          type: number
+        feeAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, verified, rejected]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, userSlug, requestedAmount, feeAmount, status, createdAt, updatedAt]
+
+    WithdrawalRequestOrNull:
+      oneOf:
+        - $ref: "#/components/schemas/WithdrawalRequest"
+        - type: "null"
+
+    WithdrawalRequestWithUser:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userSlug:
+          type: string
+        userName:
+          type: string
+        requestedAmount:
+          type: number
+        feeAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, verified, rejected]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, userSlug, userName, requestedAmount, feeAmount, status, createdAt, updatedAt]
+
+    SubmitWithdrawalRequestBody:
+      type: object
+      properties:
+        requestedAmount:
+          type: number
+      required: [requestedAmount]
