@@ -63,7 +63,7 @@ export default function AdminUserDetail() {
 
   const userForm = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    values: {
+    defaultValues: {
       name: user?.name || "",
       walletAddress: user?.walletAddress || "",
       eligibleBalance: user?.eligibleBalance || 0,
