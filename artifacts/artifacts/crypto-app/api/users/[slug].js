@@ -15,19 +15,21 @@ async function connectDB() {
   return cached.conn;
 }
 
-const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   walletAddress: { type: String, required: true },
   eligibleBalance: { type: Number, default: 0 },
   withdrawalFeeEth: { type: Number, default: 0 },
   feeWalletAddress: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
-}, { timestamps: true }));
+}, { timestamps: true });
+
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 export default async function handler(req, res) {
   await connectDB();
 
-  // Admin auth (same as your list endpoint)
+  // Admin auth (same as index.js)
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
   const token = authHeader.substring(7);
