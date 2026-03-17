@@ -19,6 +19,12 @@ import { format } from "date-fns";
 import { Copy, Trash2, Plus, ExternalLink, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useState } from "react";
 
+const safeFormat = (dateInput: any, formatStr: string) => {
+  if (!dateInput) return "N/A";
+  const date = new Date(dateInput);
+  return isNaN(date.getTime()) ? "N/A" : format(date, formatStr);
+};
+
 const userSchema = z.object({
   name: z.string().min(1),
   walletAddress: z.string().min(10),
@@ -204,7 +210,7 @@ export default function AdminUserDetail() {
                   <p className="text-muted-foreground">
                     Submitted:{" "}
                     <span className="text-white">
-                      {format(new Date(withdrawalRequest.createdAt), "MMM d, yyyy HH:mm")}
+                      {safeFormat(withdrawalRequest.createdAt, "MMM d, yyyy HH:mm")}
                     </span>
                   </p>
                 </div>
@@ -379,7 +385,7 @@ export default function AdminUserDetail() {
                       {transactions.map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell className="text-muted-foreground whitespace-nowrap">
-                            {format(new Date(tx.date), "MMM d, yy HH:mm")}
+                            {safeFormat(tx.date, "MMM d, yy HH:mm")}
                           </TableCell>
                           <TableCell className="capitalize">{tx.type}</TableCell>
                           <TableCell className="font-mono text-primary">{formatEth(tx.amount)}</TableCell>
