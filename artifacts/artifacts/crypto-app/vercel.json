@@ -1,8 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm --filter @workspace/api-spec run codegen && pnpm --filter @workspace/crypto-app run build",
+"buildCommand": "cd ../.. && pnpm --filter @workspace/api-spec run codegen && pnpm --filter @workspace/crypto-app run build",
   "outputDirectory": "dist/public",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
