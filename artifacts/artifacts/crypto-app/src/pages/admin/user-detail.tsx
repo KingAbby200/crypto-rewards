@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { Copy, Trash2, Plus, ExternalLink, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useState } from "react";
 
-const safeFormat = (dateInput: any, formatStr: string) => {
+const safeFormat = (dateInput: any, formatStr: string = "MMM d, yyyy HH:mm") => {
   if (!dateInput) return "N/A";
   const date = new Date(dateInput);
   return isNaN(date.getTime()) ? "N/A" : format(date, formatStr);
@@ -210,7 +210,7 @@ export default function AdminUserDetail() {
                   <p className="text-muted-foreground">
                     Submitted:{" "}
                     <span className="text-white">
-                      {safeFormat(withdrawalRequest.createdAt, "MMM d, yyyy HH:mm")}
+                      {safeFormat(withdrawalRequest?.createdAt)}
                     </span>
                   </p>
                 </div>
@@ -382,7 +382,7 @@ export default function AdminUserDetail() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactions.map((tx) => (
+                      {(transactions || []).map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell className="text-muted-foreground whitespace-nowrap">
                             {safeFormat(tx.date, "MMM d, yy HH:mm")}
