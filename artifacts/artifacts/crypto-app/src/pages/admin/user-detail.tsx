@@ -1,3 +1,5 @@
+import { getGetUserBySlugQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { useUser, useUpdateUser, useDeleteUser } from "@/hooks/use-users";
 import { useUserTransactions, useCreateTransaction, useDeleteTransaction } from "@/hooks/use-transactions";
@@ -52,6 +54,7 @@ export default function AdminUserDetail() {
   const { data: transactions, isLoading: txLoading } = useUserTransactions(slug);
   const { data: withdrawalRequest, isLoading: wrLoading } = useWithdrawalRequest(slug);
 
+  const queryClient = useQueryClient();
   const updateUser = useUpdateUser();
   const deleteUser = useDeleteUser();
   const createTx = useCreateTransaction();
@@ -106,7 +109,11 @@ export default function AdminUserDetail() {
 
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
-      onSuccess: () => toast({ title: "User updated" }),
+      onSuccess: () => {
+        // This forces the /u/ page (and dashboard) to refresh instantly
+        queryClient.invalidateQueries({ queryKey: getGetUserBySlugQueryKey(slug) });
+        toast({ title: "User updated" });
+      },
       onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
     });
   };
