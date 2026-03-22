@@ -27,7 +27,7 @@ export default function UserCongrats() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmitPayment = () => {
+  const handleSubmitPayment = async () => {
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) {
       toast({ title: "Enter a valid amount", variant: "destructive" });
@@ -37,17 +37,31 @@ export default function UserCongrats() {
       toast({ title: "Amount exceeds your eligible balance", variant: "destructive" });
       return;
     }
-    submitWithdrawal.mutate(
-      { slug, data: { requestedAmount: amount } },
-      {
-        onSuccess: () => {
-          toast({ title: "Payment notification sent!", description: "Waiting for admin verification." });
-        },
-        onError: (err: any) => {
-          toast({ title: "Error", description: err.message, variant: "destructive" });
-        },
+  
+    try {
+      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestedAmount: amount }),
+      });
+  
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to submit payment");
       }
-    );
+  
+      toast({
+        title: "Payment notification sent!",
+        description: "Waiting for admin verification.",
+      });
+      setWithdrawAmount(""); // optional: clear input
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Something went wrong",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading || wrLoading) {
