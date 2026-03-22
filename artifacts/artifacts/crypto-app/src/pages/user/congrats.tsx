@@ -47,14 +47,14 @@ export default function UserCongrats() {
   
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to submit payment");
+        throw new Error(errData.error || "Failed to submit");
       }
   
       toast({
         title: "Payment notification sent!",
         description: "Waiting for admin verification.",
       });
-      setWithdrawAmount(""); // optional: clear input
+      setWithdrawAmount(""); // clear input
     } catch (err: any) {
       toast({
         title: "Error",
