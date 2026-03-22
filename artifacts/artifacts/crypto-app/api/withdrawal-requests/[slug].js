@@ -27,17 +27,19 @@ const WithdrawalRequest = mongoose.models.WithdrawalRequest || mongoose.model('W
 export default async function handler(req, res) {
   await connectDB();
 
-  // Admin + user auth (same as users)
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
-  const token = authHeader.substring(7);
-  try {
-    jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const { slug } = req.query;
 
-  const { slug } = req.query;   // this is the user slug
+  // ONLY admin needs auth (for verify/reject). User "I've Made Payment" (POST) is public.
+  const authHeader = req.headers.authorization;
+  if (req.method === 'PATCH') {
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.substring(7);
+    try {
+      jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
 
   if (req.method === 'GET') {
     const wr = await WithdrawalRequest.findOne({ userSlug: slug }).lean();
@@ -46,6 +48,9 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const { requestedAmount } = req.body;
+    if (!requestedAmount || requestedAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
     const wr = await WithdrawalRequest.findOneAndUpdate(
       { userSlug: slug },
       { userSlug: slug, requestedAmount, status: 'pending' },
@@ -54,7 +59,6 @@ export default async function handler(req, res) {
     return res.status(201).json(wr);
   }
 
-  // Admin verify/reject will use the same file (or add below if needed)
   if (req.method === 'PATCH') {
     const { status } = req.body;
     const wr = await WithdrawalRequest.findOneAndUpdate(
