@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const { slug } = req.query;
 
-  // ONLY admin needs auth (for verify/reject). User "I've Made Payment" (POST) is public.
+  // ONLY admin needs auth (PATCH). User "I have Made Payment" (POST) is PUBLIC.
   const authHeader = req.headers.authorization;
   if (req.method === 'PATCH') {
     if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
