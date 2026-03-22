@@ -47,10 +47,14 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { requestedAmount } = req.body;
+    // Support both hook formats: plain body OR { data: { ... } }
+    const bodyData = req.body.data || req.body;
+    const { requestedAmount } = bodyData;
+
     if (!requestedAmount || requestedAmount <= 0) {
       return res.status(400).json({ error: 'Invalid amount' });
     }
+
     const wr = await WithdrawalRequest.findOneAndUpdate(
       { userSlug: slug },
       { userSlug: slug, requestedAmount, status: 'pending' },
