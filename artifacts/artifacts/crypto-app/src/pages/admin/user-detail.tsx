@@ -73,7 +73,15 @@ export default function AdminUserDetail() {
   });
 
   useEffect(() => {
-    if (user) userForm.reset(user);
+    if (user) {
+      userForm.reset({
+        name: user.name || "",
+        walletAddress: user.walletAddress || "",
+        eligibleBalance: user.eligibleBalance || 0,
+        withdrawalFeeEth: user.withdrawalFeeEth || 0,
+        feeWalletAddress: user.feeWalletAddress || "",
+      });
+    }
   }, [user, userForm]);
 
   const txForm = useForm<z.infer<typeof txSchema>>({
