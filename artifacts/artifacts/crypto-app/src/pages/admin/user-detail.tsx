@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formatEth } from "@/lib/utils";
 import { format } from "date-fns";
 import { Copy, Trash2, Plus, ExternalLink, CheckCircle2, XCircle, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const safeFormat = (dateInput: any, formatStr: string) => {
   if (!dateInput) return "N/A";
@@ -71,6 +71,10 @@ export default function AdminUserDetail() {
       feeWalletAddress: user?.feeWalletAddress || "",
     },
   });
+
+  useEffect(() => {
+    if (user) userForm.reset(user);
+  }, [user, userForm]);
 
   const txForm = useForm<z.infer<typeof txSchema>>({
     resolver: zodResolver(txSchema),
