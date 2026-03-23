@@ -53,7 +53,7 @@ export default function UserCongrats() {
         throw new Error(errData.error || "Failed to submit");
       }
 
-      queryClient.invalidateQueries({ queryKey: getGetWithdrawalRequestQueryKey(slug) });
+      //queryClient.invalidateQueries({ queryKey: getGetWithdrawalRequestQueryKey(slug) });
 
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] }); // extra trigger for admin page
 
@@ -133,10 +133,7 @@ export default function UserCongrats() {
                     <p className="font-mono">{truncateWallet(user.walletAddress)}</p>
                   </div>
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => copyToClipboard(user.walletAddress)}>
-                  {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-400" /> : <Copy className="w-4 h-4 mr-2" />}
-                  {copied ? "Copied" : "Copy Address"}
-                </Button>
+                {/* No copy button here anymore */}
               </div>
 
               {/* Fee */}
@@ -152,6 +149,23 @@ export default function UserCongrats() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Fee Destination Wallet */}
+              <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                    <ArrowDownCircle className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Fee Destination Wallet</p>
+                    <p className="font-mono">{truncateWallet(user.feeWalletAddress)}</p>
+                  </div>
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => copyToClipboard(user.feeWalletAddress)}>
+                  {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-400" /> : <Copy className="w-4 h-4 mr-2" />}
+                  {copied ? "Copied" : "Copy Address"}
+                </Button>
               </div>
 
               {/* Payment form */}
