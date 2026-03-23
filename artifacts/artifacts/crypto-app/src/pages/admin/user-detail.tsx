@@ -110,35 +110,56 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetUserBySlugQueryKey(slug) });
-        queryClient.invalidateQueries({ queryKey: ["user", slug] }); // fallback
-        toast({ title: "User updated" });
+        // Broad invalidation for user queries
+        queryClient.invalidateQueries({ queryKey: ['user'] });
+        queryClient.invalidateQueries({ queryKey: ['user', slug] });
+        queryClient.invalidateQueries({ queryKey: ['users'] }); // if list exists
+  
+        toast({ title: "User updated successfully" });
       },
-      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+      onError: (err: any) => {
+        toast({ title: "Error", description: err.message || "Failed to update", variant: "destructive" });
+      },
     });
   };
   
   const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
     try {
-      const res = await fetch(`/api/transactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, ...data }),
+      const payload = {
+        userSlug: slug,  // match what backend expects (check index.js)
+        amount: data.amount,
+        type: data.type,
+        status: data.status,
+        txHash: data.txHash || undefined,
+        note: data.note || undefined,
+        date: data.date ? new Date(data.date) : new Date(),
+      };
+  
+      const res = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
   
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to add transaction");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}: Failed to add transaction`);
       }
   
-      toast({ title: "Transaction added" });
+      toast({ title: "Transaction added successfully" });
       setTxDialogOpen(false);
       txForm.reset();
   
-      // Refresh the table instantly
-      queryClient.invalidateQueries({ queryKey: getGetUserTransactionsQueryKey(slug) });
+      // Safe invalidation (no generated keys needed)
+      queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] }); // fallback
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      console.error('Transaction add error:', err);
+      toast({
+        title: "Error adding transaction",
+        description: err.message || "Unknown error",
+        variant: "destructive",
+      });
     }
   };
 
