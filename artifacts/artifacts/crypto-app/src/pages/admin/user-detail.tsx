@@ -110,14 +110,14 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // This forces the /u/ page (and dashboard) to refresh instantly
         queryClient.invalidateQueries({ queryKey: getGetUserBySlugQueryKey(slug) });
+        queryClient.invalidateQueries({ queryKey: ["user", slug] }); // fallback
         toast({ title: "User updated" });
       },
       onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
     });
   };
-
+  
   const onTxSubmit = (data: z.infer<typeof txSchema>) => {
     createTx.mutate({ slug, data }, {
       onSuccess: () => {
