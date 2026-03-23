@@ -126,15 +126,17 @@ export default function AdminUserDetail() {
   const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
     try {
       const payload = {
-        userSlug: slug,  // match what backend expects (check index.js)
-        amount: data.amount,
+        userSlug: slug,  // this is critical — backend likely expects userSlug
+        amount: Number(data.amount),
         type: data.type,
-        status: data.status,
+        status: data.status || "completed",
         txHash: data.txHash || undefined,
         note: data.note || undefined,
-        date: data.date ? new Date(data.date) : new Date(),
+        date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
       };
-  
+      
+      console.log('Sending transaction payload:', payload);
+      
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
