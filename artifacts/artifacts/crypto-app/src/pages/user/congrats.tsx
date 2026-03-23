@@ -111,7 +111,11 @@ export default function UserCongrats() {
           className="text-center space-y-4"
         >
           <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4 shadow-[0_0_30px_rgba(34,211,238,0.2)]">
-            <Wallet className="w-8 h-8 text-primary" />
+            <img 
+              src="/logo.jpeg" 
+              alt="Crypto Rewards Logo" 
+              className="w-8 h-8" 
+            />
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold">
             Congratulations, <span className="text-gradient">{user.name}</span>!
