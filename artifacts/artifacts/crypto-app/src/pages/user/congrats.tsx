@@ -55,6 +55,8 @@ export default function UserCongrats() {
 
       queryClient.invalidateQueries({ queryKey: getGetWithdrawalRequestQueryKey(slug) });
 
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] }); // extra trigger for admin page
+
       toast({
         title: "Payment notification sent!",
         description: "Waiting for admin verification.",
