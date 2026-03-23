@@ -30,6 +30,21 @@ const Transaction = mongoose.models.Transaction || mongoose.model('Transaction',
 export default async function handler(req, res) {
   await connectDB();
 
+  if (req.method === 'GET') {
+    const { userSlug } = req.query;
+    if (!userSlug) return res.status(400).json({ error: 'userSlug required in query' });
+  
+    try {
+      const txs = await Transaction.find({ userSlug }).lean();
+      return res.status(200).json(txs.map(tx => ({
+        id: tx._id.toString(),
+        ...tx
+      })));
+    } catch (err) {
+      return res.status(500).json({ error: 'Failed to fetch transactions', details: err.message });
+    }
+  }
+  
   if (req.method === 'POST') {
     try {
       console.log('POST /api/transactions body:', req.body); // for Vercel logs
