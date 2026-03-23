@@ -126,7 +126,7 @@ export default function AdminUserDetail() {
   const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
     try {
       const payload = {
-        userSlug: slug,  // this is critical — backend likely expects userSlug
+        userSlug: slug,  // backend likely expects this (change to slug: slug if your index.js uses slug)
         amount: Number(data.amount),
         type: data.type,
         status: data.status || "completed",
@@ -134,9 +134,9 @@ export default function AdminUserDetail() {
         note: data.note || undefined,
         date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
       };
-      
-      console.log('Sending transaction payload:', payload);
-      
+  
+      console.log('Sending transaction payload:', payload); // keep for debugging
+  
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -145,21 +145,21 @@ export default function AdminUserDetail() {
   
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${res.status}: Failed to add transaction`);
+        throw new Error(errData.error || `HTTP ${res.status}: ${errData.details || 'Failed to add transaction'}`);
       }
   
       toast({ title: "Transaction added successfully" });
       setTxDialogOpen(false);
       txForm.reset();
   
-      // Safe invalidation (no generated keys needed)
+      // Safe invalidation using string keys
       queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
-      queryClient.invalidateQueries({ queryKey: ['transactions'] }); // fallback
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     } catch (err: any) {
-      console.error('Transaction add error:', err);
+      console.error('Transaction submit error:', err);
       toast({
         title: "Error adding transaction",
-        description: err.message || "Unknown error",
+        description: err.message || "Unknown error - check console",
         variant: "destructive",
       });
     }
