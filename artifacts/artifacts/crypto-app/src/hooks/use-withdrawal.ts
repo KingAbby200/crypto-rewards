@@ -11,7 +11,12 @@ import {
 
 export function useWithdrawalRequest(slug: string) {
   return useQuery({
-    ...getGetWithdrawalRequestQueryOptions(slug),
+    queryKey: ['withdrawal-request', slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/withdrawal-requests/${slug}`);
+      if (!res.ok) throw new Error('Failed to load withdrawal request');
+      return res.json();
+    },
     enabled: !!slug,
   });
 }
