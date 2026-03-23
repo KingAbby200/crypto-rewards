@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useGetUserTransactions as useGeneratedGetUserTransactions,
   useCreateTransaction as useGeneratedCreateTransaction,
@@ -8,8 +8,14 @@ import {
 } from "@workspace/api-client-react";
 
 export function useUserTransactions(slug: string) {
-  return useGeneratedGetUserTransactions(slug, {
-    query: { enabled: !!slug }
+  return useQuery({
+    queryKey: ['user-transactions', slug],
+    queryFn: async () => {
+      const res = await fetch(`/api/transactions?userSlug=${slug}`);
+      if (!res.ok) throw new Error('Failed to load transactions');
+      return res.json();
+    },
+    enabled: !!slug,
   });
 }
 
