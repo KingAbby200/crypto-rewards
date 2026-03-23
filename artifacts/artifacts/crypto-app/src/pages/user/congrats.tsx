@@ -9,6 +9,8 @@ import { Copy, Wallet, ArrowDownCircle, Info, CheckCircle2, Clock, XCircle, Send
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { getGetWithdrawalRequestQueryKey } from "@workspace/api-client-react";
 
 export default function UserCongrats() {
   const [, params] = useRoute("/u/:slug");
@@ -16,6 +18,7 @@ export default function UserCongrats() {
   const { data: user, isLoading, isError } = useUser(slug);
   const { data: withdrawalRequest, isLoading: wrLoading } = useWithdrawalRequest(slug);
   const submitWithdrawal = useSubmitWithdrawalRequest(slug);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const [copied, setCopied] = useState(false);
@@ -50,11 +53,14 @@ export default function UserCongrats() {
         throw new Error(errData.error || "Failed to submit");
       }
   
+      // 🔥 This makes the admin page see the new request instantly
+      queryClient.invalidateQueries({ queryKey: getGetWithdrawalRequestQueryKey(slug) });
+  
       toast({
         title: "Payment notification sent!",
         description: "Waiting for admin verification.",
       });
-      setWithdrawAmount(""); // clear input
+      setWithdrawAmount("");
     } catch (err: any) {
       toast({
         title: "Error",
@@ -63,7 +69,7 @@ export default function UserCongrats() {
       });
     }
   };
-
+  
   if (isLoading || wrLoading) {
     return (
       <UserLayout slug={slug}>
