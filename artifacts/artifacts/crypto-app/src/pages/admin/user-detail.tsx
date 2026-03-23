@@ -110,16 +110,12 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // Broad invalidation for user queries
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-        queryClient.invalidateQueries({ queryKey: ['user', slug] });
-        queryClient.invalidateQueries({ queryKey: ['users'] }); // if list exists
-  
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+        queryClient.invalidateQueries({ queryKey: ["user", slug] });
+        queryClient.invalidateQueries({ queryKey: ["users"] });
         toast({ title: "User updated successfully" });
       },
-      onError: (err: any) => {
-        toast({ title: "Error", description: err.message || "Failed to update", variant: "destructive" });
-      },
+      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
     });
   };
   
@@ -176,21 +172,42 @@ export default function AdminUserDetail() {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (!withdrawalRequest) return;
-    verifyWr.mutate({ requestId: withdrawalRequest.id }, {
-      onSuccess: () => toast({ title: "Payment verified!", description: "User has been notified." }),
-      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-    });
+    try {
+      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "verified" }),
+      });
+  
+      if (!res.ok) throw new Error("Failed to verify");
+      
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] }); // refresh history too
+      toast({ title: "Payment verified!", description: "User has been notified." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
+    }
   };
 
-  const handleReject = () => {
-    if (!withdrawalRequest) return;
-    rejectWr.mutate({ requestId: withdrawalRequest.id }, {
-      onSuccess: () => toast({ title: "Payment rejected.", description: "User has been notified." }),
-      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+const handleReject = async () => {
+  if (!withdrawalRequest) return;
+  try {
+    const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "rejected" }),
     });
-  };
+
+    if (!res.ok) throw new Error("Failed to reject");
+    
+    queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+    toast({ title: "Payment rejected.", description: "User has been notified." });
+  } catch (err: any) {
+    toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
+  }
+};
 
   const userLink = `${window.location.origin}${import.meta.env.BASE_URL}u/${user.slug}`;
 
