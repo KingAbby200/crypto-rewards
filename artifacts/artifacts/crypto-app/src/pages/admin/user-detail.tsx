@@ -118,15 +118,28 @@ export default function AdminUserDetail() {
     });
   };
   
-  const onTxSubmit = (data: z.infer<typeof txSchema>) => {
-    createTx.mutate({ slug, data }, {
-      onSuccess: () => {
-        toast({ title: "Transaction added" });
-        setTxDialogOpen(false);
-        txForm.reset();
-      },
-      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
-    });
+  const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
+    try {
+      const res = await fetch(`/api/transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, ...data }),
+      });
+  
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to add transaction");
+      }
+  
+      toast({ title: "Transaction added" });
+      setTxDialogOpen(false);
+      txForm.reset();
+  
+      // Refresh the table instantly
+      queryClient.invalidateQueries({ queryKey: getGetUserTransactionsQueryKey(slug) });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleDeleteUser = () => {
