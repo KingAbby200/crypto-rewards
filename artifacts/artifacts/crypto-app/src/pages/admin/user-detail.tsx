@@ -110,12 +110,16 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
+        // Force refresh both admin and public user page
         queryClient.invalidateQueries({ queryKey: ["user"] });
         queryClient.invalidateQueries({ queryKey: ["user", slug] });
         queryClient.invalidateQueries({ queryKey: ["users"] });
+  
         toast({ title: "User updated successfully" });
       },
-      onError: (err: any) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+      onError: (err: any) => {
+        toast({ title: "Error", description: err.message || "Failed to update", variant: "destructive" });
+      },
     });
   };
   
@@ -175,16 +179,21 @@ export default function AdminUserDetail() {
   const handleVerify = async () => {
     if (!withdrawalRequest) return;
     try {
+      const token = localStorage.getItem("token");   // ← this is the missing piece
       const res = await fetch(`/api/withdrawal-requests/${slug}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ status: "verified" }),
       });
   
-      if (!res.ok) throw new Error("Failed to verify");
-      
+      if (!res.ok) throw new Error("Failed to verify payment");
+  
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] }); // refresh history too
+      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
+  
       toast({ title: "Payment verified!", description: "User has been notified." });
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
@@ -194,15 +203,20 @@ export default function AdminUserDetail() {
 const handleReject = async () => {
   if (!withdrawalRequest) return;
   try {
+    const token = localStorage.getItem("token");
     const res = await fetch(`/api/withdrawal-requests/${slug}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ status: "rejected" }),
     });
 
-    if (!res.ok) throw new Error("Failed to reject");
-    
+    if (!res.ok) throw new Error("Failed to reject payment");
+
     queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+
     toast({ title: "Payment rejected.", description: "User has been notified." });
   } catch (err: any) {
     toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
