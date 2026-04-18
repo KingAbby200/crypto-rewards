@@ -110,11 +110,9 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // Force refresh both admin and public user page
         queryClient.invalidateQueries({ queryKey: ["user"] });
         queryClient.invalidateQueries({ queryKey: ["user", slug] });
         queryClient.invalidateQueries({ queryKey: ["users"] });
-  
         toast({ title: "User updated successfully" });
       },
       onError: (err: any) => {
@@ -167,60 +165,54 @@ export default function AdminUserDetail() {
 
   const handleDeleteUser = () => {
     if (confirm("Are you sure you want to delete this user? This cannot be undone.")) {
-      deleteUser.mutate({ slug }, {
-        onSuccess: () => {
-          toast({ title: "User deleted" });
-          setLocation("/admin");
-        },
-      });
+      deleteUser.mutate(
+        { slug },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });     // refresh dashboard list
+            queryClient.invalidateQueries({ queryKey: ["user", slug] });
+            toast({ title: "User deleted successfully" });
+            setLocation("/admin");
+          },
+          onError: (err: any) => {
+            toast({ title: "Error", description: err.message || "Failed to delete user", variant: "destructive" });
+          },
+        }
+      );
     }
   };
 
-  const handleVerify = async () => {
+  const handleVerify = () => {
     if (!withdrawalRequest) return;
-    try {
-      const token = localStorage.getItem("token");   // ← this is the missing piece
-      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+    verifyWr.mutate(
+      { requestId: withdrawalRequest.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+          queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
+          toast({ title: "Payment verified!", description: "User has been notified." });
         },
-        body: JSON.stringify({ status: "verified" }),
-      });
-  
-      if (!res.ok) throw new Error("Failed to verify payment");
-  
-      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
-  
-      toast({ title: "Payment verified!", description: "User has been notified." });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
-    }
+        onError: (err: any) => {
+          toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
+        },
+      }
+    );
   };
 
-const handleReject = async () => {
+const handleReject = () => {
   if (!withdrawalRequest) return;
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`/api/withdrawal-requests/${slug}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+  rejectWr.mutate(
+    { requestId: withdrawalRequest.id },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+        toast({ title: "Payment rejected.", description: "User has been notified." });
       },
-      body: JSON.stringify({ status: "rejected" }),
-    });
-
-    if (!res.ok) throw new Error("Failed to reject payment");
-
-    queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-
-    toast({ title: "Payment rejected.", description: "User has been notified." });
-  } catch (err: any) {
-    toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
-  }
+      onError: (err: any) => {
+        toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
+      },
+    }
+  );
 };
 
   const userLink = `${window.location.origin}${import.meta.env.BASE_URL}u/${user.slug}`;
