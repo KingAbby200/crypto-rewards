@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import Landing from "@/pages/index";
+import Success from "@/pages/success";
 import UserCongrats from "@/pages/user/congrats";
 import UserHistory from "@/pages/user/history";
 import AdminLogin from "@/pages/admin/login";
@@ -26,6 +27,7 @@ function Router() {
     <Switch>
       {/* Landing */}
       <Route path="/" component={Landing} />
+      <Route path="/success" component={Success} />
 
       {/* Admin Routes */}
       <Route path="/admin/secret-login" component={AdminLogin} />
