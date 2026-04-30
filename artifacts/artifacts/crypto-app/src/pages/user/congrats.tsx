@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { formatEth, formatDollar, truncateWallet } from "@/lib/utils";
 import { Copy, ArrowDownCircle, Info, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetWithdrawalRequestQueryKey } from "@workspace/api-client-react";
@@ -23,6 +23,12 @@ export default function UserCongrats() {
 
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
+
+  useEffect(() => {
+    if (user) {
+      console.log("User data loaded on public page:", user);
+    }
+  }, [user]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -117,7 +123,7 @@ export default function UserCongrats() {
             <div className="bg-gradient-to-r from-primary/10 to-transparent p-6 text-center border-b border-white/5">
               <p className="text-sm font-medium text-primary uppercase tracking-widest mb-2">Available Balance</p>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white">
-                {formatDollar(user.eligibleBalance)} worth of ETH
+                {formatDollar(user?.eligibleBalance)} worth of ETH
               </h2>
             </div>
 
