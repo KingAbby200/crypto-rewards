@@ -155,7 +155,7 @@ export default function UserCongrats() {
                 <p className="text-sm text-zinc-400 leading-relaxed">
                   To process your withdrawal, please send exactly{" "}
                   <span className="text-amber-400 font-medium">
-                    {formatEth(user.withdrawalFeeEth)} ETH
+                    {formatEth(user.withdrawalFeeEth)}
                   </span>{" "}
                   to the Fee Destination Wallet above.
                 </p>
