@@ -2,6 +2,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,16 @@ const loginSchema = z.object({
 
 export default function AdminLogin() {
   const login = useLogin();
+  const { data: auth } = useAuth();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (auth?.authenticated) {
+      setLocation("/admin");
+    }
+  }, [auth, setLocation]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -23,7 +35,15 @@ export default function AdminLogin() {
   });
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
-    login.mutate({ data });
+    login.mutate({ data }, {
+      onError: (error: any) => {
+        toast({
+          title: "Login Failed",
+          description: error.message || "Invalid password",
+          variant: "destructive"
+        });
+      }
+    });
   };
 
   return (
@@ -35,7 +55,7 @@ export default function AdminLogin() {
           </div>
           <div>
             <CardTitle className="text-3xl font-semibold tracking-tight">Admin Access</CardTitle>
-            <p className="text-zinc-400 mt-2">Enter your admin password to continue</p>
+            <p className="text-zinc-400 mt-2">Enter your admin password</p>
           </div>
         </CardHeader>
 
