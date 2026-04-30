@@ -22,8 +22,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Top Bar - Mobile */}
-      <div className="md:hidden border-b border-white/10 bg-black/95 backdrop-blur-md fixed w-full z-50 px-6 py-4 flex items-center justify-between">
+      {/* Top Bar (Mobile + Desktop) */}
+      <nav className="border-b border-white/10 bg-black/95 backdrop-blur-md fixed w-full z-50 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center">
             <span className="text-black font-bold text-xl">S</span>
@@ -31,75 +31,56 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <span className="font-semibold tracking-tight">SFC Admin</span>
         </div>
 
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-8 text-sm">
+          <Link href="/admin" className="hover:text-white transition">Dashboard</Link>
+          <Link href="/admin/users" className="hover:text-white transition">Users</Link>
+          <Link href="/admin/users/new" className="hover:text-white transition">Create User</Link>
+        </div>
+
+        {/* Log Out Button - Visible on all screens */}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => logout.mutate()}
+          className="text-zinc-400 hover:text-white hidden md:flex"
+        >
+          <LogOut size={18} className="mr-2" />
+          Log Out
+        </Button>
+
+        {/* Mobile Menu Button */}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger>
+          <SheetTrigger className="md:hidden">
             <Menu className="w-6 h-6" />
           </SheetTrigger>
-          <SheetContent side="left" className="bg-zinc-950 border-white/10 w-72">
-            <div className="mt-8 space-y-6">
-              <Link href="/admin" className="flex items-center gap-3 text-lg" onClick={() => setOpen(false)}>
-                <LayoutDashboard size={22} />
-                Dashboard
-              </Link>
-              <Link href="/admin/users" className="flex items-center gap-3 text-lg" onClick={() => setOpen(false)}>
-                <Users size={22} />
-                All Users
-              </Link>
-              <Link href="/admin/users/new" className="flex items-center gap-3 text-lg" onClick={() => setOpen(false)}>
-                <Users size={22} />
-                Create User
-              </Link>
+          <SheetContent side="right" className="bg-zinc-950 border-white/10 w-72">
+            <div className="mt-12 flex flex-col gap-6 text-lg">
+              <Link href="/admin" onClick={() => setOpen(false)} className="hover:text-white">Dashboard</Link>
+              <Link href="/admin/users" onClick={() => setOpen(false)} className="hover:text-white">All Users</Link>
+              <Link href="/admin/users/new" onClick={() => setOpen(false)} className="hover:text-white">Create New User</Link>
+              
+              <div className="pt-6 border-t border-white/10">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-red-400 hover:text-red-500"
+                  onClick={() => {
+                    logout.mutate();
+                    setOpen(false);
+                  }}
+                >
+                  <LogOut size={20} className="mr-3" />
+                  Log Out
+                </Button>
+              </div>
             </div>
           </SheetContent>
         </Sheet>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 bg-zinc-950 border-r border-white/10 flex-col fixed h-screen">
-        <div className="p-8 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white rounded-2xl flex items-center justify-center">
-              <span className="text-black font-bold text-2xl">S</span>
-            </div>
-            <div>
-              <div className="font-semibold tracking-tight text-2xl">SFC</div>
-              <div className="text-xs text-zinc-500 -mt-1">Admin Panel</div>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-6 py-10 space-y-2">
-          <Link href="/admin" className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/5 transition">
-            <LayoutDashboard size={20} />
-            <span className="font-medium">Dashboard</span>
-          </Link>
-          <Link href="/admin/users" className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/5 transition">
-            <Users size={20} />
-            <span className="font-medium">All Users</span>
-          </Link>
-          <Link href="/admin/users/new" className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/5 transition">
-            <Users size={20} />
-            <span className="font-medium">Create New User</span>
-          </Link>
-        </nav>
-
-        <div className="p-6 border-t border-white/10">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-zinc-400 hover:text-white hover:bg-white/5"
-            onClick={() => logout.mutate()}
-          >
-            <LogOut size={20} className="mr-3" />
-            Log Out
-          </Button>
-        </div>
-      </aside>
+      </nav>
 
       {/* Main Content */}
-      <main className="md:ml-72 min-h-screen bg-black">
-        <div className="p-6 md:p-10 max-w-6xl mx-auto">
-          {children}
-        </div>
+      <main className="pt-20 pb-12 px-6 md:px-10 max-w-7xl mx-auto">
+        {children}
       </main>
     </div>
   );
