@@ -188,11 +188,14 @@ export default function AdminUserDetail() {
   const handleVerify = async () => {
     if (!withdrawalRequest) return;
   
-    const token = localStorage.getItem("token");
-    console.log("Token used for verify:", token ? "Present (" + token.substring(0, 20) + "...)" : "MISSING");
+    const token = localStorage.getItem("adminToken");
   
     if (!token) {
-      toast({ title: "Error", description: "Not logged in. Please login again.", variant: "destructive" });
+      toast({ 
+        title: "Authentication Error", 
+        description: "Please log in again as admin.", 
+        variant: "destructive" 
+      });
       return;
     }
   
@@ -206,56 +209,69 @@ export default function AdminUserDetail() {
         body: JSON.stringify({ status: "verified" }),
       });
   
-      const responseText = await res.text();
-      console.log("Verify response:", res.status, responseText);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Verify failed (${res.status}): ${errorText}`);
+      }
   
-      if (!res.ok) throw new Error(`Verify failed: ${res.status} - ${responseText}`);
-  
+      // Refresh relevant data
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
   
       toast({ title: "Payment verified!", description: "User has been notified." });
     } catch (err: any) {
       console.error("Verify error:", err);
-      toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
-    }
-  };
-  
-  const handleReject = async () => {
-    if (!withdrawalRequest) return;
-  
-    const token = localStorage.getItem("token");
-    console.log("Token used for reject:", token ? "Present" : "MISSING");
-  
-    if (!token) {
-      toast({ title: "Error", description: "Not logged in. Please login again.", variant: "destructive" });
-      return;
-    }
-  
-    try {
-      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "rejected" }),
+      toast({ 
+        title: "Error", 
+        description: err.message || "Failed to verify payment", 
+        variant: "destructive" 
       });
-  
-      const responseText = await res.text();
-      console.log("Reject response:", res.status, responseText);
-  
-      if (!res.ok) throw new Error(`Reject failed: ${res.status} - ${responseText}`);
-  
-      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-      queryClient.invalidateQueries({ queryKey: ["user", slug] });
-  
-      toast({ title: "Payment rejected.", description: "User has been notified." });
-    } catch (err: any) {
-      console.error("Reject error:", err);
-      toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
     }
   };
+
+const handleReject = async () => {
+  if (!withdrawalRequest) return;
+
+  const token = localStorage.getItem("adminToken");
+
+  if (!token) {
+    toast({ 
+      title: "Authentication Error", 
+      description: "Please log in again as admin.", 
+      variant: "destructive" 
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: "rejected" }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Reject failed (${res.status}): ${errorText}`);
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+    queryClient.invalidateQueries({ queryKey: ["user", slug] });
+
+    toast({ title: "Payment rejected.", description: "User has been notified." });
+  } catch (err: any) {
+    console.error("Reject error:", err);
+    toast({ 
+      title: "Error", 
+      description: err.message || "Failed to reject payment", 
+      variant: "destructive" 
+    });
+  }
+};
   
   const userLink = `${window.location.origin}${import.meta.env.BASE_URL}u/${user.slug}`;
 
