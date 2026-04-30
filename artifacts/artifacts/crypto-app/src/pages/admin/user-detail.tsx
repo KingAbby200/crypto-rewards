@@ -107,27 +107,44 @@ export default function AdminUserDetail() {
     return <AdminLayout><div className="p-12 text-center text-destructive">User not found</div></AdminLayout>;
   }
 
-  const onUserSubmit = (data: z.infer<typeof userSchema>) => {
-    updateUser.mutate({ slug, data }, {
-      onSuccess: () => {
-        // Very aggressive cache clearing
-        queryClient.invalidateQueries({ queryKey: ["user"], exact: false });
-        queryClient.invalidateQueries({ queryKey: ["user", slug] });
-        queryClient.invalidateQueries({ queryKey: ["users"] });
-        
-        // Force refetch of this specific user
-        queryClient.refetchQueries({ queryKey: ["user", slug] });
+  const onUserSubmit = async (data: z.infer<typeof userSchema>) => {
+    const token = localStorage.getItem("adminToken");
   
-        toast({ title: "User updated successfully" });
-      },
-      onError: (err: any) => {
-        toast({ 
-          title: "Error", 
-          description: err.message || "Failed to update user", 
-          variant: "destructive" 
-        });
-      },
-    });
+    if (!token) {
+      toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
+      return;
+    }
+  
+    try {
+      const res = await fetch(`/api/users/${slug}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Update failed (${res.status}): ${errorText}`);
+      }
+  
+      // Force refresh everything
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["user", slug] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.refetchQueries({ queryKey: ["user", slug] });
+  
+      toast({ title: "User updated successfully" });
+    } catch (err: any) {
+      console.error("Update error:", err);
+      toast({ 
+        title: "Error", 
+        description: err.message || "Failed to update user", 
+        variant: "destructive" 
+      });
+    }
   };
   
   const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
