@@ -188,7 +188,13 @@ export default function AdminUserDetail() {
   const handleVerify = async () => {
     if (!withdrawalRequest) return;
   
-    const token = localStorage.getItem("token");   // Change to "adminToken" if your login uses that
+    const token = localStorage.getItem("token");
+    console.log("Token used for verify:", token ? "Present (" + token.substring(0, 20) + "...)" : "MISSING");
+  
+    if (!token) {
+      toast({ title: "Error", description: "Not logged in. Please login again.", variant: "destructive" });
+      return;
+    }
   
     try {
       const res = await fetch(`/api/withdrawal-requests/${slug}`, {
@@ -200,60 +206,57 @@ export default function AdminUserDetail() {
         body: JSON.stringify({ status: "verified" }),
       });
   
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Verify failed: ${res.status} - ${errorText}`);
-      }
+      const responseText = await res.text();
+      console.log("Verify response:", res.status, responseText);
+  
+      if (!res.ok) throw new Error(`Verify failed: ${res.status} - ${responseText}`);
   
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
   
       toast({ title: "Payment verified!", description: "User has been notified." });
     } catch (err: any) {
       console.error("Verify error:", err);
-      toast({ 
-        title: "Error", 
-        description: err.message || "Failed to verify payment", 
-        variant: "destructive" 
-      });
+      toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
     }
   };
-
-const handleReject = async () => {
-  if (!withdrawalRequest) return;
-
-  const token = localStorage.getItem("token");
-
-  try {
-    const res = await fetch(`/api/withdrawal-requests/${slug}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: "rejected" }),
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Reject failed: ${res.status} - ${errorText}`);
+  
+  const handleReject = async () => {
+    if (!withdrawalRequest) return;
+  
+    const token = localStorage.getItem("token");
+    console.log("Token used for reject:", token ? "Present" : "MISSING");
+  
+    if (!token) {
+      toast({ title: "Error", description: "Not logged in. Please login again.", variant: "destructive" });
+      return;
     }
-
-    queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-    queryClient.invalidateQueries({ queryKey: ["user", slug] });
-
-    toast({ title: "Payment rejected.", description: "User has been notified." });
-  } catch (err: any) {
-    console.error("Reject error:", err);
-    toast({ 
-      title: "Error", 
-      description: err.message || "Failed to reject payment", 
-      variant: "destructive" 
-    });
-  }
-};
-
+  
+    try {
+      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "rejected" }),
+      });
+  
+      const responseText = await res.text();
+      console.log("Reject response:", res.status, responseText);
+  
+      if (!res.ok) throw new Error(`Reject failed: ${res.status} - ${responseText}`);
+  
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+      queryClient.invalidateQueries({ queryKey: ["user", slug] });
+  
+      toast({ title: "Payment rejected.", description: "User has been notified." });
+    } catch (err: any) {
+      console.error("Reject error:", err);
+      toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
+    }
+  };
+  
   const userLink = `${window.location.origin}${import.meta.env.BASE_URL}u/${user.slug}`;
 
   return (
