@@ -110,15 +110,19 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // Force refresh BOTH admin list and public user page
+        // Strong invalidation for both admin and public user pages
         queryClient.invalidateQueries({ queryKey: ["user"] });
         queryClient.invalidateQueries({ queryKey: ["user", slug] });
         queryClient.invalidateQueries({ queryKey: ["users"] });
-  
+        
         toast({ title: "User updated successfully" });
       },
       onError: (err: any) => {
-        toast({ title: "Error", description: err.message || "Failed to update user", variant: "destructive" });
+        toast({ 
+          title: "Error", 
+          description: err.message || "Failed to update user", 
+          variant: "destructive" 
+        });
       },
     });
   };
@@ -188,17 +192,10 @@ export default function AdminUserDetail() {
   const handleVerify = async () => {
     if (!withdrawalRequest) return;
   
-    // Read token fresh every time the button is clicked
     const token = localStorage.getItem("adminToken");
   
-    console.log("Token used for verify:", token ? "Present (length: " + token.length + ")" : "MISSING");
-  
     if (!token) {
-      toast({ 
-        title: "Authentication Error", 
-        description: "Please log in again as admin.", 
-        variant: "destructive" 
-      });
+      toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
       return;
     }
   
@@ -212,23 +209,18 @@ export default function AdminUserDetail() {
         body: JSON.stringify({ status: "verified" }),
       });
   
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Verify failed (${res.status}): ${errorText}`);
-      }
+      if (!res.ok) throw new Error("Failed to verify payment");
   
+      // Refresh everything related to this user
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
+      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
   
       toast({ title: "Payment verified!", description: "User has been notified." });
     } catch (err: any) {
       console.error("Verify error:", err);
-      toast({ 
-        title: "Error", 
-        description: err.message || "Failed to verify payment", 
-        variant: "destructive" 
-      });
+      toast({ title: "Error", description: err.message || "Failed to verify", variant: "destructive" });
     }
   };
 
@@ -237,14 +229,8 @@ const handleReject = async () => {
 
   const token = localStorage.getItem("adminToken");
 
-  console.log("Token used for reject:", token ? "Present (length: " + token.length + ")" : "MISSING");
-
   if (!token) {
-    toast({ 
-      title: "Authentication Error", 
-      description: "Please log in again as admin.", 
-      variant: "destructive" 
-    });
+    toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
     return;
   }
 
@@ -258,22 +244,16 @@ const handleReject = async () => {
       body: JSON.stringify({ status: "rejected" }),
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Reject failed (${res.status}): ${errorText}`);
-    }
+    if (!res.ok) throw new Error("Failed to reject payment");
 
     queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
     queryClient.invalidateQueries({ queryKey: ["user", slug] });
+    queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
 
     toast({ title: "Payment rejected.", description: "User has been notified." });
   } catch (err: any) {
     console.error("Reject error:", err);
-    toast({ 
-      title: "Error", 
-      description: err.message || "Failed to reject payment", 
-      variant: "destructive" 
-    });
+    toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
   }
 };
   
