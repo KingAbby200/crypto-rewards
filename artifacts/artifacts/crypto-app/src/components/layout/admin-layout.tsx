@@ -47,14 +47,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <Link 
-            href="/admin/users" 
-            className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
-          >
-            <Users size={20} />
-            <span className="font-medium">All Users</span>
-          </Link>
-
-          <Link 
             href="/admin/users/new" 
             className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
           >
