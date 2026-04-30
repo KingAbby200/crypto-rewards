@@ -122,20 +122,22 @@ export default function UserCongrats() {
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6">
               <p className="text-sm text-zinc-500 mb-1">Connected Wallet</p>
-              <p className="font-mono text-sm break-all">{user.walletAddress}</p>
+              <p className="font-mono text-sm break-all">{truncateWallet(user.walletAddress)}</p>
             </CardContent>
           </Card>
 
-          {/* Fee Destination Wallet - Standout Copy Button */}
+          {/* Fee Destination Wallet - Prominent Copy Button */}
           <Card className="bg-zinc-900 border-zinc-800">
-            <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
+            <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="flex-1">
                 <p className="text-sm text-zinc-500 mb-1">Fee Destination Wallet</p>
-                <p className="font-mono text-sm break-all">{user.feeWalletAddress}</p>
+                <p className="font-mono text-sm break-all tracking-wider">
+                  {user.feeWalletAddress}
+                </p>
               </div>
               <Button 
                 onClick={() => copyToClipboard(user.feeWalletAddress)}
-                className="bg-white hover:bg-zinc-200 text-black font-medium px-8 py-2.5 whitespace-nowrap"
+                className="bg-white hover:bg-zinc-100 text-black font-medium px-8 py-3 min-w-[140px]"
               >
                 {copied ? "✓ Copied" : "Copy Address"}
               </Button>
@@ -153,7 +155,7 @@ export default function UserCongrats() {
                 <p className="text-sm text-zinc-400 leading-relaxed">
                   To process your withdrawal, please send exactly{" "}
                   <span className="text-amber-400 font-medium">
-                    {formatEth(user.withdrawalFeeEth)}
+                    {formatEth(user.withdrawalFeeEth)} ETH
                   </span>{" "}
                   to the Fee Destination Wallet above.
                 </p>
@@ -171,7 +173,7 @@ export default function UserCongrats() {
               <Input
                 type="number"
                 step="0.0001"
-                placeholder="Enter the exact amount you paid in ETH"
+                placeholder="Amount paid in ETH"
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 className="bg-black border-zinc-700 text-lg py-6"
