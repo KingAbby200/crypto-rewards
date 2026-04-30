@@ -188,7 +188,10 @@ export default function AdminUserDetail() {
   const handleVerify = async () => {
     if (!withdrawalRequest) return;
   
+    // Read token fresh every time the button is clicked
     const token = localStorage.getItem("adminToken");
+  
+    console.log("Token used for verify:", token ? "Present (length: " + token.length + ")" : "MISSING");
   
     if (!token) {
       toast({ 
@@ -214,7 +217,6 @@ export default function AdminUserDetail() {
         throw new Error(`Verify failed (${res.status}): ${errorText}`);
       }
   
-      // Refresh relevant data
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -234,6 +236,8 @@ const handleReject = async () => {
   if (!withdrawalRequest) return;
 
   const token = localStorage.getItem("adminToken");
+
+  console.log("Token used for reject:", token ? "Present (length: " + token.length + ")" : "MISSING");
 
   if (!token) {
     toast({ 
