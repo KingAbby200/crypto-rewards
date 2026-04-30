@@ -96,9 +96,6 @@ export default function UserCongrats() {
       <div className="max-w-2xl mx-auto px-6 pt-16 pb-24">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="mx-auto w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
-            <img src="/logo.png" alt="SFC" className="w-9 h-9" />
-          </div>
           <h1 className="text-5xl font-semibold tracking-tight mb-3">
             Welcome, {user.name}
           </h1>
@@ -129,22 +126,21 @@ export default function UserCongrats() {
             </CardContent>
           </Card>
 
+          {/* Fee Destination Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6 flex items-center justify-between">
               <div>
                 <p className="text-sm text-zinc-500">Fee Destination Wallet</p>
-                <p className="font-mono text-sm mt-1">{truncateWallet(user.feeWalletAddress)}</p>
+                <p className="font-mono text-sm mt-1 tracking-wider">{truncateWallet(user.feeWalletAddress)}</p>
               </div>
               <Button 
-                variant="ghost" 
-                size="sm"
                 onClick={() => copyToClipboard(user.feeWalletAddress)}
+                className="bg-white text-black hover:bg-zinc-200 font-medium px-6"
               >
-                {copied ? "Copied" : "Copy"}
+                {copied ? "Copied ✓" : "Copy Address"}
               </Button>
             </CardContent>
           </Card>
-        </div>
 
         {/* Withdrawal Fee Notice */}
         <Card className="bg-zinc-900 border-amber-500/20 mb-8">
