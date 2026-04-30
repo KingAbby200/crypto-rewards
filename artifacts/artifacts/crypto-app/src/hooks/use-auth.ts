@@ -18,19 +18,21 @@ export function useLogin() {
   return useGeneratedAdminLogin({
     mutation: {
       onSuccess: (data) => {
-        if (data.token) {
+        console.log("Login success - data received:", data);
+
+        if (data?.token) {
           localStorage.setItem('adminToken', data.token);
-          console.log("Token saved successfully");
+          console.log("Token saved to localStorage");
         } else {
-          console.warn("No token received from login");
+          console.warn("No token received from login response");
         }
-        
+
         queryClient.invalidateQueries({ queryKey: getGetAuthStatusQueryKey() });
-        
-        // Force redirect with small delay to ensure token is saved
+
+        // Force redirect with a small delay to ensure everything is ready
         setTimeout(() => {
           setLocation("/admin");
-        }, 100);
+        }, 150);
       },
       onError: (error: any) => {
         console.error("Login error:", error);
