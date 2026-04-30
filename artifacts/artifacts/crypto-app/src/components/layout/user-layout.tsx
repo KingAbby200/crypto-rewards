@@ -14,12 +14,12 @@ export function UserLayout({ children, slug }: { children: React.ReactNode; slug
       {/* Desktop Top Navigation */}
       <nav className="border-b border-white/10 bg-black/95 backdrop-blur-md fixed w-full z-50">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center">
               <span className="text-black font-bold text-xl">S</span>
             </div>
             <span className="font-semibold tracking-tight text-xl">SFC Membership</span>
-          </Link>
+          </div>
 
           <div className="hidden md:flex items-center gap-10 text-sm">
             <Link 
