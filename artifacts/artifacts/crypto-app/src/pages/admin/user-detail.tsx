@@ -110,11 +110,22 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // Very aggressive invalidation to force refresh everywhere
-        queryClient.invalidateQueries({ queryKey: ["user"] });
-        queryClient.invalidateQueries({ queryKey: ["user", slug] });
-        queryClient.invalidateQueries({ queryKey: ["users"] });
-        queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+        // Force complete cache refresh
+        queryClient.invalidateQueries({ 
+          queryKey: ["user"], 
+          exact: false 
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ["user", slug] 
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ["users"] 
+        });
+  
+        // Small delay to ensure backend has committed the change
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["user", slug] });
+        }, 500);
   
         toast({ title: "User updated successfully" });
       },
