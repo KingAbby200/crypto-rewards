@@ -1,8 +1,8 @@
 import { Link, useRoute } from "wouter";
-import { Home, History, Menu } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export function UserLayout({ children, slug }: { children: React.ReactNode; slug: string }) {
   const [isHome] = useRoute(`/u/:slug`);
@@ -10,35 +10,63 @@ export function UserLayout({ children, slug }: { children: React.ReactNode; slug
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 relative overflow-hidden">
-      {/* Desktop Top Nav */}
-      <nav className="hidden md:flex items-center justify-between px-8 py-4 border-b bg-background/95 backdrop-blur">
-        <Link href="/" className="font-display text-2xl font-bold">Crypto Rewards</Link>
-        <div className="flex gap-8 text-sm">
-          <Link href={`/u/${slug}`} className={cn(isHome && "text-primary font-semibold")}>Home</Link>
-          <Link href={`/u/${slug}/history`} className={cn(isHistory && "text-primary font-semibold")}>History</Link>
+    <div className="min-h-screen bg-black text-white">
+      {/* Desktop Top Navigation */}
+      <nav className="border-b border-white/10 bg-black/95 backdrop-blur-md fixed w-full z-50">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center">
+              <span className="text-black font-bold text-xl">S</span>
+            </div>
+            <span className="font-semibold tracking-tight text-xl">SFC Membership</span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-10 text-sm">
+            <Link 
+              href={`/u/${slug}`} 
+              className={cn("hover:text-white transition", isHome && "text-white font-medium")}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href={`/u/${slug}/history`} 
+              className={cn("hover:text-white transition", isHistory && "text-white font-medium")}
+            >
+              Transaction History
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger className="md:hidden">
+              <Menu className="w-6 h-6" />
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-black border-white/10">
+              <div className="flex flex-col gap-8 mt-12 text-lg">
+                <Link 
+                  href={`/u/${slug}`} 
+                  onClick={() => setOpen(false)}
+                  className="hover:text-white transition"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href={`/u/${slug}/history`} 
+                  onClick={() => setOpen(false)}
+                  className="hover:text-white transition"
+                >
+                  Transaction History
+                </Link>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </nav>
 
-      {/* Mobile Collapsible Drawer */}
-      <div className="md:hidden flex items-center justify-between px-6 py-4 border-b bg-background/95 backdrop-blur">
-        <Link href="/" className="font-display text-2xl font-bold">Crypto Rewards</Link>
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger>
-            <Menu className="w-6 h-6" />
-          </SheetTrigger>
-          <SheetContent side="right">
-            <div className="flex flex-col gap-8 mt-12 text-lg">
-              <Link href={`/u/${slug}`} onClick={() => setOpen(false)} className="flex items-center gap-3">🏠 Home</Link>
-              <Link href={`/u/${slug}/history`} onClick={() => setOpen(false)} className="flex items-center gap-3">📜 History</Link>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <div className="relative z-10">
+      {/* Main Content */}
+      <main className="pt-20">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
