@@ -24,10 +24,10 @@ export default function UserCongrats() {
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
 
-  // Force refetch when component mounts or slug changes
+  // Force refetch when the component mounts or when slug changes
   useEffect(() => {
     if (slug) {
-      queryClient.invalidateQueries({ queryKey: ["user", slug] });
+      queryClient.refetchQueries({ queryKey: ["user", slug] });
     }
   }, [slug, queryClient]);
 
@@ -124,7 +124,7 @@ export default function UserCongrats() {
             <div className="bg-gradient-to-r from-primary/10 to-transparent p-6 text-center border-b border-white/5">
               <p className="text-sm font-medium text-primary uppercase tracking-widest mb-2">Available Balance</p>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white">
-                {formatDollar(user?.eligibleBalance)} worth of ETH
+                {formatDollar(user?.eligibleBalance ?? 0)} worth of ETH
               </h2>
             </div>
 
