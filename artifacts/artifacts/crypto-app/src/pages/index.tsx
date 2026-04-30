@@ -6,9 +6,6 @@ export default function Home() {
         <p className="text-xl text-gray-400 mb-8">
           Landing page is currently being updated.
         </p>
-        <p className="text-sm text-gray-500">
-          The rest of the application (admin + user pages) is still functional.
-        </p>
       </div>
     </div>
   );
