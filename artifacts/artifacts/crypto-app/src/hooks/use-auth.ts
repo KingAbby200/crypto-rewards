@@ -20,9 +20,20 @@ export function useLogin() {
       onSuccess: (data) => {
         if (data.token) {
           localStorage.setItem('adminToken', data.token);
+          console.log("Token saved successfully");
+        } else {
+          console.warn("No token received from login");
         }
+        
         queryClient.invalidateQueries({ queryKey: getGetAuthStatusQueryKey() });
-        setLocation("/admin");
+        
+        // Force redirect with small delay to ensure token is saved
+        setTimeout(() => {
+          setLocation("/admin");
+        }, 100);
+      },
+      onError: (error: any) => {
+        console.error("Login error:", error);
       }
     }
   });
