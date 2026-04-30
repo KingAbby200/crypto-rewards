@@ -24,11 +24,12 @@ export default function UserCongrats() {
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
 
+  // Force refetch when component mounts or slug changes
   useEffect(() => {
-    if (user) {
-      console.log("User data loaded on public page:", user);
+    if (slug) {
+      queryClient.invalidateQueries({ queryKey: ["user", slug] });
     }
-  }, [user]);
+  }, [slug, queryClient]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
