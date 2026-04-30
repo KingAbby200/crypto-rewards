@@ -23,32 +23,23 @@ export default function AdminLogin() {
   });
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
-    login.mutate({ data }, {
-      onError: (error: any) => {
-        toast({
-          title: "Login Failed",
-          description: error.message || "Invalid password",
-          variant: "destructive"
-        });
-      }
-    });
+    login.mutate({ data });
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center p-4 relative overflow-hidden">
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20 pointer-events-none" 
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/crypto-bg.png)` }}
-      />
-      
-      <Card className="w-full max-w-md relative z-10 border-primary/20 shadow-[0_0_50px_rgba(34,211,238,0.1)]">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <Lock className="w-6 h-6 text-primary" />
+    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+      <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
+        <CardHeader className="text-center space-y-6 pb-8">
+          <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center">
+            <Lock className="w-8 h-8 text-black" />
           </div>
-          <CardTitle className="text-2xl">Admin Access</CardTitle>
+          <div>
+            <CardTitle className="text-3xl font-semibold tracking-tight">Admin Access</CardTitle>
+            <p className="text-zinc-400 mt-2">Enter your admin password to continue</p>
+          </div>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="px-8 pb-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -56,15 +47,25 @@ export default function AdminLogin() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Admin Password</FormLabel>
+                    <FormLabel className="text-zinc-400">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter password..." {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        {...field} 
+                        className="bg-black border-zinc-700 text-lg py-6"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={login.isPending}>
+
+              <Button 
+                type="submit" 
+                className="w-full py-6 text-base font-medium bg-white text-black hover:bg-zinc-200"
+                disabled={login.isPending}
+              >
                 {login.isPending ? "Authenticating..." : "Login"}
               </Button>
             </form>
