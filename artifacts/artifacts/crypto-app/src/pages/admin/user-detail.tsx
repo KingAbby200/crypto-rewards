@@ -110,11 +110,12 @@ export default function AdminUserDetail() {
   const onUserSubmit = (data: z.infer<typeof userSchema>) => {
     updateUser.mutate({ slug, data }, {
       onSuccess: () => {
-        // Strong invalidation for both admin and public user pages
+        // Very aggressive invalidation to force refresh everywhere
         queryClient.invalidateQueries({ queryKey: ["user"] });
         queryClient.invalidateQueries({ queryKey: ["user", slug] });
         queryClient.invalidateQueries({ queryKey: ["users"] });
-        
+        queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+  
         toast({ title: "User updated successfully" });
       },
       onError: (err: any) => {
