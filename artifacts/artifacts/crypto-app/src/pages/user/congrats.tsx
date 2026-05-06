@@ -53,8 +53,8 @@ export default function UserCongrats() {
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
 
       toast({
-        title: "Payment notification sent!",
-        description: "Waiting for admin verification.",
+        title: "Confirming Payment",
+        description: "Please wait while we confirm your payment...",
       });
       setWithdrawAmount("");
     } catch (err: any) {
@@ -108,7 +108,7 @@ export default function UserCongrats() {
         {/* Balance Card */}
         <Card className="bg-zinc-900 border-zinc-800 mb-10">
           <CardContent className="p-12 text-center">
-            <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">AVAILABLE REWARD</p>
+            <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">YOU ARE ELIGIBLE TO WITHDRAW</p>
             <div className="text-7xl font-semibold tracking-tighter text-white mb-1">
               {formatDollar(user.eligibleBalance)}
             </div>
@@ -121,7 +121,7 @@ export default function UserCongrats() {
           {/* Connected Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6">
-              <p className="text-sm text-zinc-500 mb-1">Connected Wallet</p>
+              <p className="text-sm text-zinc-500 mb-1">Personal Withdrawal Wallet</p>
               <p className="font-mono text-sm break-all">{truncateWallet(user.walletAddress)}</p>
             </CardContent>
           </Card>
@@ -130,7 +130,7 @@ export default function UserCongrats() {
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex-1">
-                <p className="text-sm text-zinc-500 mb-1">Fee Destination Wallet</p>
+                <p className="text-sm text-zinc-500 mb-1">Fee Withdrawal Wallet</p>
                 <p className="font-mono text-sm break-all tracking-wider">
                   {user.feeWalletAddress}
                 </p>
