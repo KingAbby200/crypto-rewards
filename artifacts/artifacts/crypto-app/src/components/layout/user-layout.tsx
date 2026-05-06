@@ -18,7 +18,7 @@ export function UserLayout({ children, slug }: { children: React.ReactNode; slug
             <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center">
               <span className="text-black font-bold text-xl">S</span>
             </div>
-            <span className="font-semibold tracking-tight text-xl">SFC Membership</span>
+            <span className="font-semibold tracking-tight text-xl">SFC Fund</span>
           </div>
 
           <div className="hidden md:flex items-center gap-10 text-sm">
