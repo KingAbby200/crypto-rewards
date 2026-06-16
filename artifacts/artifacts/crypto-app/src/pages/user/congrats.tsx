@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDollar, formatEth, truncateWallet } from "@/lib/utils";
-import { Copy, Info } from "lucide-react";
+import { Copy, Info, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ export default function UserCongrats() {
 
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -42,8 +42,8 @@ export default function UserCongrats() {
       return;
     }
 
-    // Start loading immediately
-    setIsSubmitting(true);
+    // Show modal immediately
+    setShowLoadingModal(true);
 
     try {
       const res = await fetch(`/api/withdrawal-requests/${slug}`, {
@@ -55,11 +55,7 @@ export default function UserCongrats() {
       if (!res.ok) throw new Error("Failed to submit payment");
 
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-
-      toast({
-        title: "Payment Submitted",
-        description: "Confirming your transaction...",
-      });
+      
       setWithdrawAmount("");
     } catch (err: any) {
       toast({
@@ -68,8 +64,13 @@ export default function UserCongrats() {
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      // Keep modal open for a moment so user can see result, or close immediately
+      // setShowLoadingModal(false); // Uncomment if you want auto-close
     }
+  };
+
+  const closeLoadingModal = () => {
+    setShowLoadingModal(false);
   };
 
   if (isLoading) {
@@ -111,7 +112,7 @@ export default function UserCongrats() {
           </p>
         </div>
 
-        {/* Balance Card - Responsive font size */}
+        {/* Balance Card */}
         <Card className="bg-zinc-900 border-zinc-800 mb-10">
           <CardContent className="p-12 text-center">
             <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">YOU ARE ELIGIBLE TO WITHDRAW</p>
@@ -124,6 +125,7 @@ export default function UserCongrats() {
 
         {/* Wallet Information */}
         <div className="space-y-4 mb-12">
+          {/* Connected Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6">
               <p className="text-sm text-zinc-500 mb-1">Personal Withdrawal Wallet</p>
@@ -131,6 +133,7 @@ export default function UserCongrats() {
             </CardContent>
           </Card>
 
+          {/* Fee Destination Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex-1">
@@ -186,21 +189,37 @@ export default function UserCongrats() {
               <Button 
                 onClick={handleSubmitPayment} 
                 className="w-full py-7 text-base font-medium bg-white text-black hover:bg-zinc-200"
-                disabled={!withdrawAmount || isSubmitting}
+                disabled={!withdrawAmount}
               >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Confirming Payment...
-                  </div>
-                ) : (
-                  "Confirm Payment Submission"
-                )}
+                Confirm Payment Submission
               </Button>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Loading Modal */}
+      {showLoadingModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-10 text-center relative">
+            <button
+              onClick={closeLoadingModal}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+
+            <div className="flex justify-center mb-6">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+
+            <h3 className="text-2xl font-semibold mb-2">Confirming Payment</h3>
+            <p className="text-zinc-400">
+              Please wait while we confirm your payment...
+            </p>
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 }
