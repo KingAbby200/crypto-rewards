@@ -42,6 +42,7 @@ export default function UserCongrats() {
       return;
     }
 
+    // Start loading immediately
     setIsSubmitting(true);
 
     try {
@@ -56,8 +57,8 @@ export default function UserCongrats() {
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
 
       toast({
-        title: "Confirming Payment",
-        description: "Please wait while we confirm your payment...",
+        title: "Payment Submitted",
+        description: "Confirming your transaction...",
       });
       setWithdrawAmount("");
     } catch (err: any) {
@@ -110,7 +111,7 @@ export default function UserCongrats() {
           </p>
         </div>
 
-        {/* Balance Card */}
+        {/* Balance Card - Responsive font size */}
         <Card className="bg-zinc-900 border-zinc-800 mb-10">
           <CardContent className="p-12 text-center">
             <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">YOU ARE ELIGIBLE TO WITHDRAW</p>
@@ -123,7 +124,6 @@ export default function UserCongrats() {
 
         {/* Wallet Information */}
         <div className="space-y-4 mb-12">
-          {/* Connected Wallet */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6">
               <p className="text-sm text-zinc-500 mb-1">Personal Withdrawal Wallet</p>
@@ -131,7 +131,6 @@ export default function UserCongrats() {
             </CardContent>
           </Card>
 
-          {/* Fee Destination Wallet - Prominent Copy Button */}
           <Card className="bg-zinc-900 border-zinc-800">
             <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex-1">
@@ -192,7 +191,7 @@ export default function UserCongrats() {
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-3">
                     <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                    Confirming...
+                    Confirming Payment...
                   </div>
                 ) : (
                   "Confirm Payment Submission"
