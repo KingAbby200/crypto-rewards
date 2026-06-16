@@ -23,6 +23,7 @@ export default function UserCongrats() {
 
   const [copied, setCopied] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -40,6 +41,8 @@ export default function UserCongrats() {
       toast({ title: "Amount exceeds your eligible balance", variant: "destructive" });
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const res = await fetch(`/api/withdrawal-requests/${slug}`, {
@@ -63,6 +66,8 @@ export default function UserCongrats() {
         description: err.message || "Something went wrong",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,7 +114,7 @@ export default function UserCongrats() {
         <Card className="bg-zinc-900 border-zinc-800 mb-10">
           <CardContent className="p-12 text-center">
             <p className="uppercase tracking-[2px] text-xs text-zinc-500 mb-3">YOU ARE ELIGIBLE TO WITHDRAW</p>
-            <div className="text-7xl font-semibold tracking-tighter text-white mb-1">
+            <div className="text-[2.75rem] sm:text-6xl md:text-7xl font-semibold tracking-tighter text-white mb-1 overflow-hidden">
               {formatDollar(user.eligibleBalance)}
             </div>
             <p className="text-zinc-400">worth of ETH</p>
@@ -182,9 +187,16 @@ export default function UserCongrats() {
               <Button 
                 onClick={handleSubmitPayment} 
                 className="w-full py-7 text-base font-medium bg-white text-black hover:bg-zinc-200"
-                disabled={!withdrawAmount}
+                disabled={!withdrawAmount || isSubmitting}
               >
-                Confirm Payment Submission
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    Confirming...
+                  </div>
+                ) : (
+                  "Confirm Payment Submission"
+                )}
               </Button>
             </div>
           </CardContent>
