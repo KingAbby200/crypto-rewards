@@ -34,7 +34,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8 text-sm">
           <Link href="/admin" className="hover:text-white transition">Dashboard</Link>
-          <Link href="/admin/users" className="hover:text-white transition">Users</Link>
           <Link href="/admin/users/new" className="hover:text-white transition">Create User</Link>
         </div>
 
