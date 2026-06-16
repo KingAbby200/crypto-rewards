@@ -130,6 +130,7 @@ export default function AdminUserDetail() {
         throw new Error(`Update failed (${res.status}): ${errorText}`);
       }
   
+      // Force refresh everything
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -191,30 +192,44 @@ export default function AdminUserDetail() {
     }
   };
 
-  const handleDeleteTransaction = (txId: string) => {
+  const handleDeleteTransaction = async (txId: string) => {
     if (!confirm("Delete transaction? This action cannot be undone.")) return;
 
-    deleteTx.mutate(
-      { slug, txId },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Transaction Deleted",
-            description: "The transaction record has been removed successfully.",
-          });
-          queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
-          queryClient.invalidateQueries({ queryKey: ['transactions'] });
-        },
-        onError: (err: any) => {
-          console.error("Delete transaction error:", err);
-          toast({
-            title: "Error deleting transaction",
-            description: err.message || "Failed to delete transaction",
-            variant: "destructive",
-          });
-        },
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
+        return;
       }
-    );
+
+      const res = await fetch(`/api/transactions?id=${txId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+
+      toast({
+        title: "Transaction Deleted",
+        description: "The transaction record has been removed successfully.",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (err: any) {
+      console.error("Delete transaction error:", err);
+      toast({
+        title: "Error deleting transaction",
+        description: err.message || "Failed to delete transaction",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteUser = () => {
