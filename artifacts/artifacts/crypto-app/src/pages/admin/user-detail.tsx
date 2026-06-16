@@ -130,7 +130,6 @@ export default function AdminUserDetail() {
         throw new Error(`Update failed (${res.status}): ${errorText}`);
       }
   
-      // Force refresh everything
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -150,7 +149,7 @@ export default function AdminUserDetail() {
   const onTxSubmit = async (data: z.infer<typeof txSchema>) => {
     try {
       const payload = {
-        userSlug: slug,  // backend likely expects this (change to slug: slug if your index.js uses slug)
+        userSlug: slug,
         amount: Number(data.amount),
         type: data.type,
         status: data.status || "completed",
@@ -159,8 +158,8 @@ export default function AdminUserDetail() {
         date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
       };
   
-      console.log('Sending transaction payload:', payload); // keep for debugging
-  
+      console.log('Sending transaction payload:', payload);
+
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -172,11 +171,14 @@ export default function AdminUserDetail() {
         throw new Error(errData.error || `HTTP ${res.status}: ${errData.details || 'Failed to add transaction'}`);
       }
   
-      toast({ title: "Transaction added successfully" });
+      toast({
+        title: "Transaction Record Added",
+        description: `${formatEth(Number(data.amount))} ${data.type} transaction has been successfully recorded.`,
+      });
+      
       setTxDialogOpen(false);
       txForm.reset();
-  
-      // Safe invalidation using string keys
+
       queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
     } catch (err: any) {
@@ -187,6 +189,32 @@ export default function AdminUserDetail() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleDeleteTransaction = (txId: string) => {
+    if (!confirm("Delete transaction? This action cannot be undone.")) return;
+
+    deleteTx.mutate(
+      { slug, txId },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Transaction Deleted",
+            description: "The transaction record has been removed successfully.",
+          });
+          queryClient.invalidateQueries({ queryKey: ['user-transactions', slug] });
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        },
+        onError: (err: any) => {
+          console.error("Delete transaction error:", err);
+          toast({
+            title: "Error deleting transaction",
+            description: err.message || "Failed to delete transaction",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const handleDeleteUser = () => {
@@ -231,7 +259,6 @@ export default function AdminUserDetail() {
   
       if (!res.ok) throw new Error("Failed to verify payment");
   
-      // Refresh everything related to this user
       queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
       queryClient.invalidateQueries({ queryKey: ["user", slug] });
       queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
@@ -244,38 +271,38 @@ export default function AdminUserDetail() {
     }
   };
 
-const handleReject = async () => {
-  if (!withdrawalRequest) return;
+  const handleReject = async () => {
+    if (!withdrawalRequest) return;
 
-  const token = localStorage.getItem("adminToken");
+    const token = localStorage.getItem("adminToken");
 
-  if (!token) {
-    toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
-    return;
-  }
+    if (!token) {
+      toast({ title: "Authentication Error", description: "Please log in again.", variant: "destructive" });
+      return;
+    }
 
-  try {
-    const res = await fetch(`/api/withdrawal-requests/${slug}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: "rejected" }),
-    });
+    try {
+      const res = await fetch(`/api/withdrawal-requests/${slug}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "rejected" }),
+      });
 
-    if (!res.ok) throw new Error("Failed to reject payment");
+      if (!res.ok) throw new Error("Failed to reject payment");
 
-    queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
-    queryClient.invalidateQueries({ queryKey: ["user", slug] });
-    queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
+      queryClient.invalidateQueries({ queryKey: ["withdrawal-request", slug] });
+      queryClient.invalidateQueries({ queryKey: ["user", slug] });
+      queryClient.invalidateQueries({ queryKey: ["user-transactions", slug] });
 
-    toast({ title: "Payment rejected.", description: "User has been notified." });
-  } catch (err: any) {
-    console.error("Reject error:", err);
-    toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
-  }
-};
+      toast({ title: "Payment rejected.", description: "User has been notified." });
+    } catch (err: any) {
+      console.error("Reject error:", err);
+      toast({ title: "Error", description: err.message || "Failed to reject", variant: "destructive" });
+    }
+  };
   
   const userLink = `${window.location.origin}${import.meta.env.BASE_URL}u/${user.slug}`;
 
@@ -539,11 +566,7 @@ const handleReject = async () => {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => {
-                                if (confirm("Delete transaction?")) {
-                                  deleteTx.mutate({ slug, txId: tx.id });
-                                }
-                              }}
+                              onClick={() => handleDeleteTransaction(tx.id)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
