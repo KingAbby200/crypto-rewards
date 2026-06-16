@@ -30,6 +30,7 @@ const Transaction = mongoose.models.Transaction || mongoose.model('Transaction',
 export default async function handler(req, res) {
   await connectDB();
 
+  // GET - Fetch transactions for a user
   if (req.method === 'GET') {
     const { userSlug } = req.query;
     if (!userSlug) return res.status(400).json({ error: 'userSlug required in query' });
@@ -45,9 +46,10 @@ export default async function handler(req, res) {
     }
   }
   
+  // POST - Create new transaction
   if (req.method === 'POST') {
     try {
-      console.log('POST /api/transactions body:', req.body); // for Vercel logs
+      console.log('POST /api/transactions body:', req.body);
 
       const tx = await Transaction.create(req.body);
       return res.status(201).json({
@@ -59,10 +61,37 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error: 'Failed to add transaction',
         details: err.message,
-        // If Mongoose validation error
         validation: err.errors ? Object.fromEntries(
           Object.entries(err.errors).map(([k, v]) => [k, v.message])
         ) : null
+      });
+    }
+  }
+
+  // DELETE - Delete a transaction by ID
+  if (req.method === 'DELETE') {
+    const { id } = req.query;   // e.g. /api/transactions?id=xxx
+
+    if (!id) {
+      return res.status(400).json({ error: 'Transaction ID is required' });
+    }
+
+    try {
+      const deleted = await Transaction.findByIdAndDelete(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Transaction deleted successfully' 
+      });
+    } catch (err) {
+      console.error('Delete transaction error:', err);
+      return res.status(500).json({ 
+        error: 'Failed to delete transaction', 
+        details: err.message 
       });
     }
   }
